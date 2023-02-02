@@ -29,7 +29,7 @@ public class Product
     public float Stock { get; set; }
     public DateTime CreationDate { get; set; }
     public DateTime EditDate { get; set; }
-    public Guid CategoryId { get; set; }
+    public int CategoryId { get; set; }
     public Category? Category { get; set; }
 
 
