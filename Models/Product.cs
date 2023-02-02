@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using WebApplication1.Models.Request;
 
 namespace WebApplication1.Models;
 
@@ -32,5 +33,21 @@ public class Product
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
 
+    public Product()
+    {
+        var date = DateTime.Now;
+        CreationDate = date;
+        EditDate = date;
+    }
+
+    public Product(ProductRequest productRequest) : this()
+    {
+        this.Name = productRequest.Name;
+        this.Description = productRequest.Description;
+        this.ImageUrl = productRequest.ImageUrl;
+        this.Price = productRequest.Price;
+        this.Stock = productRequest.Stock;
+        this.CategoryId = productRequest.CategoryId;
+    }
 
 }
