@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication1.Context;
 using WebApplication1.Models;
 using WebApplication1.Models.Request;
@@ -53,6 +54,32 @@ namespace WebApplication1.Controllers
 
             return new CreatedAtRouteResult("GetProductById",
                 new {id = product.ProductId}, product);
+        }
+
+        [HttpPut("{id:int}")]
+        public ActionResult Put(int id, Product product)
+        {
+            if (id != product.ProductId)
+                return BadRequest();
+
+            _context.Entry(product).State = EntityState.Modified;
+            _context.SaveChanges();
+
+            return Ok(product);
+        }
+
+        [HttpDelete("{id:int}")]
+        public ActionResult Delete(int id)
+        {
+            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
+
+            if (product is null)
+                return NotFound("Product Not Found");
+
+            _context.Products.Remove(product);
+            _context.SaveChanges();
+
+            return Ok();
         }
     }
 }
