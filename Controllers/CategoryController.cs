@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Context;
 using WebApplication1.Models;
+using WebApplication1.Repository;
 
 namespace WebApplication1.Controllers
 {
@@ -10,29 +11,29 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUnitOfWork _uow;
 
-        public CategoryController(AppDbContext context)
+        public CategoryController(IUnitOfWork uow)
         {
-            _context = context;
+            _uow = uow;
         }
 
         [HttpGet("CategoriesProducts")]
-        public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesProductsAsync()
+        public ActionResult<IEnumerable<Category>> GetCategoriesProducts()
         {
-            return await _context.Categories.Include(c => c.products).ToListAsync();
+            return _uow.CategoryRepository.GetCategoriesProducts().ToList();
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetAsync()
+        public ActionResult<IEnumerable<Category>> GetAll()
         {
-            return await _context.Categories.AsNoTracking().ToListAsync();
+            return _uow.CategoryRepository.GetAll().ToList();
         }
 
         [HttpGet("{id:int}", Name = "GetCategoryById")]
-        public async Task<ActionResult<Category>> GetAsync(int id)
+        public ActionResult<Category> Get(int id)
         {
-            var category = await _context.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.CategoryId == id);
+            var category = _uow.CategoryRepository.Get(c => c.CategoryId == id);
 
             if (category is null)
                 return NotFound("Category Not Found");
@@ -47,8 +48,8 @@ namespace WebApplication1.Controllers
             if (category is null)
                 return BadRequest();
 
-            _context.Categories.Add(category);
-            _context.SaveChanges();
+            _uow.CategoryRepository.Add(category);
+            _uow.Commit();
 
             return new CreatedAtRouteResult
                 ("GetCategoryById", new {id = category.CategoryId}, category);
@@ -61,8 +62,8 @@ namespace WebApplication1.Controllers
             if (category is null)
                 return BadRequest();
 
-            _context.Entry(category).State = EntityState.Modified;
-            _context.SaveChanges();
+            _uow.CategoryRepository.Update(category);
+            _uow.Commit();
 
             return new CreatedAtRouteResult
                 ("GetCategoryById", new { id = category.CategoryId }, category);
@@ -71,13 +72,13 @@ namespace WebApplication1.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult<Category> Delete(int id)
         {
-            var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id);
+            var category = _uow.CategoryRepository.Get(c => c.CategoryId == id);
 
             if (category is null)
                 return NotFound("Category Not Found");
 
-            _context.Categories.Remove(category);
-            _context.SaveChanges();
+            _uow.CategoryRepository.Delete(category);
+            _uow.Commit();
 
             return Ok(category);
         }

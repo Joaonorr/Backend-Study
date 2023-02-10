@@ -1,6 +1,6 @@
 ﻿using WebApplication1.Models;
 
-namespace WebApplication1.Repository.ProductRepository;
+namespace WebApplication1.Repository;
 
 public interface IProductRepository : IRepository<Product>
 {

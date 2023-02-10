@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Context;
 using WebApplication1.Models;
 using WebApplication1.Models.Request;
+using WebApplication1.Repository;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,17 +13,17 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUnitOfWork _uow;
 
-        public ProductsController(AppDbContext context)
+        public ProductsController(IUnitOfWork uow)
         {
-            _context = context;
+            _uow = uow;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Product>> Get()
         {
-            var products = _context.Products.ToList();
+            var products = _uow.ProductRepository.GetAll().ToList();
 
             if (products is null)
                 return NotFound("Empty product list");
@@ -33,13 +34,14 @@ namespace WebApplication1.Controllers
         [HttpGet("{id:int}", Name = "GetProductById")]
         public ActionResult<Product> Get(int id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
+            var product = _uow.ProductRepository.Get(p => p.ProductId == id);
 
             if (product is null)
                 return NotFound("Product Not Found");
 
             return product;
         }
+
 
         [HttpPost]
         public ActionResult Post(ProductRequest productRequest)
@@ -49,8 +51,8 @@ namespace WebApplication1.Controllers
             if (product is null)
                 return BadRequest();
 
-            _context.Products.Add(product);
-            _context.SaveChanges();
+            _uow.ProductRepository.Add(product);
+            _uow.Commit();
 
             return new CreatedAtRouteResult("GetProductById",
                 new {id = product.ProductId}, product);
@@ -62,8 +64,8 @@ namespace WebApplication1.Controllers
             if (id != product.ProductId)
                 return BadRequest();
 
-            _context.Entry(product).State = EntityState.Modified;
-            _context.SaveChanges();
+            _uow.ProductRepository.Update(product);
+            _uow.Commit();
 
             return Ok(product);
         }
@@ -71,13 +73,13 @@ namespace WebApplication1.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
+            var product = _uow.ProductRepository.Get(p => p.ProductId == id);
 
             if (product is null)
                 return NotFound("Product Not Found");
 
-            _context.Products.Remove(product);
-            _context.SaveChanges();
+            _uow.ProductRepository.Delete(product);
+            _uow.Commit();
 
             return Ok();
         }
