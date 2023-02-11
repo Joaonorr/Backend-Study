@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using WebApplication1.Models.Request;
 
 namespace WebApplication1.Models;
 
@@ -42,15 +41,4 @@ public class Product
         CreationDate = date;
         EditDate = date;
     }
-
-    public Product(ProductRequest productRequest) : this()
-    {
-        this.Name = productRequest.Name;
-        this.Description = productRequest.Description;
-        this.ImageUrl = productRequest.ImageUrl;
-        this.Price = productRequest.Price;
-        this.Stock = productRequest.Stock;
-        this.CategoryId = productRequest.CategoryId;
-    }
-
 }
