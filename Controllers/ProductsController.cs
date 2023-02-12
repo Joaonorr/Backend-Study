@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Context;
+using System.Text.Json;
 using WebApplication1.DTOs;
 using WebApplication1.Models;
+using WebApplication1.Pagination;
 using WebApplication1.Repository;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -24,12 +24,24 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ProductDTO>> Get()
+        public ActionResult<IEnumerable<ProductDTO>> Get([FromQuery] ProductsParameters productsParameters)
         {
-            var products = _uow.ProductRepository.GetAll().ToList();
+            var products = _uow.ProductRepository.GetProductsPaged(productsParameters);
 
             if (products is null)
                 return NotFound("Empty product list");
+
+            var metadata = new
+            {
+                products.TotalCount,
+                products.PageSize,
+                products.CurrentPage,
+                products.TotalPages,
+                products.HasNext,
+                products.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
             var productsDTO = _mapper.Map<List<ProductDTO>>(products);
 

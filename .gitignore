@@ -1,5 +1,5 @@
-/bin/
-/.vs/
-/obj/
-/migrations/
+bin
+.vs
+obj
+migrations
 ```

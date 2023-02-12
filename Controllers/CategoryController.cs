@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Context;
 using WebApplication1.DTOs;
 using WebApplication1.Models;
+using WebApplication1.Pagination;
 using WebApplication1.Repository;
 
 namespace WebApplication1.Controllers
@@ -23,17 +24,21 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet("CategoriesProducts")]
-        public ActionResult<IEnumerable<CategoryDTO>> GetCategoriesProducts()
+        public ActionResult<IEnumerable<CategoryDTO>> GetCategoriesProducts(
+            [FromQuery] CategoryParameters categoryParameters
+        )
         {
-            var categories =  _uow.CategoryRepository.GetCategoriesProducts().ToList();
+            var categories =  _uow.CategoryRepository.GetCategoriesProducts(categoryParameters).ToList();
             var categoriesDTO = _mapper.Map<List<CategoryDTO>>(categories);
             return categoriesDTO;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<CategoryDTO>> GetAll()
+        public ActionResult<IEnumerable<CategoryDTO>> GetAll(
+            [FromQuery] CategoryParameters categoryParameters
+        )
         {
-            var categories = _uow.CategoryRepository.GetAll().ToList();
+            var categories = _uow.CategoryRepository.GetCategoriesPaged(categoryParameters).ToList();
             var categoriesDTO = _mapper.Map<List<CategoryDTO>>(categories);
             return categoriesDTO;
         }
