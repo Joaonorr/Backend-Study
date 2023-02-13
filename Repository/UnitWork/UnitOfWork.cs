@@ -1,6 +1,8 @@
 ﻿using WebApplication1.Context;
+using WebApplication1.Repository.CategoryRepo;
+using WebApplication1.Repository.ProductRepo;
 
-namespace WebApplication1.Repository;
+namespace WebApplication1.Repository.UnitWork;
 
 public class UnitOfWork : IUnitOfWork
 {
@@ -13,11 +15,11 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
     }
 
-    public IProductRepository ProductRepository 
+    public IProductRepository ProductRepository
     {
-        get 
+        get
         {
-            return _productRepository ??= new ProductRepository(_context); 
+            return _productRepository ??= new ProductRepository(_context);
         }
     }
     public ICategoryRepository CategoryRepository

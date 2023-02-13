@@ -2,12 +2,12 @@
 using WebApplication1.Models;
 using WebApplication1.Pagination;
 
-namespace WebApplication1.Repository;
+namespace WebApplication1.Repository.ProductRepo;
 
 public class ProductRepository : Repository<Product>, IProductRepository
 {
     public ProductRepository(AppDbContext context) : base(context)
-    {        
+    {
     }
 
     public async Task<PagedList<Product>> GetProductsPaged(ProductsParameters productsParameters)

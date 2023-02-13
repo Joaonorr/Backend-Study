@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Context;
 using WebApplication1.DTOs;
 using WebApplication1.Models;
 using WebApplication1.Pagination;
-using WebApplication1.Repository;
+using WebApplication1.Repository.UnitWork;
 
 namespace WebApplication1.Controllers
 {

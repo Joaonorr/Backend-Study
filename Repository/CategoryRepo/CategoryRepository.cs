@@ -3,7 +3,7 @@ using WebApplication1.Context;
 using WebApplication1.Models;
 using WebApplication1.Pagination;
 
-namespace WebApplication1.Repository;
+namespace WebApplication1.Repository.CategoryRepo;
 
 public class CategoryRepository : Repository<Category>, ICategoryRepository
 {
