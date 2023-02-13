@@ -5,5 +5,5 @@ namespace WebApplication1.Repository;
 
 public interface IProductRepository : IRepository<Product>
 {
-    PagedList<Product> GetProductsPaged(ProductsParameters productsParameters);
+    Task<PagedList<Product>> GetProductsPaged(ProductsParameters productsParameters);
 }

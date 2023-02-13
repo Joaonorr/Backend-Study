@@ -24,29 +24,29 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet("CategoriesProducts")]
-        public ActionResult<IEnumerable<CategoryDTO>> GetCategoriesProducts(
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategoriesProducts(
             [FromQuery] CategoryParameters categoryParameters
         )
         {
-            var categories =  _uow.CategoryRepository.GetCategoriesProducts(categoryParameters).ToList();
+            var categories =  await _uow.CategoryRepository.GetCategoriesProducts(categoryParameters);
             var categoriesDTO = _mapper.Map<List<CategoryDTO>>(categories);
             return categoriesDTO;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<CategoryDTO>> GetAll(
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAll(
             [FromQuery] CategoryParameters categoryParameters
         )
         {
-            var categories = _uow.CategoryRepository.GetCategoriesPaged(categoryParameters).ToList();
+            var categories = await _uow.CategoryRepository.GetCategoriesPaged(categoryParameters);
             var categoriesDTO = _mapper.Map<List<CategoryDTO>>(categories);
             return categoriesDTO;
         }
 
         [HttpGet("{id:int}", Name = "GetCategoryById")]
-        public ActionResult<CategoryDTO> Get(int id)
+        public async Task<ActionResult<CategoryDTO>> Get(int id)
         {
-            var category = _uow.CategoryRepository.Get(c => c.CategoryId == id);
+            var category = await _uow.CategoryRepository.Get(c => c.CategoryId == id);
 
             if (category is null)
                 return NotFound("Category Not Found");
@@ -57,7 +57,7 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Category> Post(CategoryDTO categoryDTO)
+        public async Task<ActionResult<Category>> Post(CategoryDTO categoryDTO)
         {
 
             if (categoryDTO is null)
@@ -66,7 +66,7 @@ namespace WebApplication1.Controllers
             var category = _mapper.Map<Category>(categoryDTO);
 
             _uow.CategoryRepository.Add(category);
-            _uow.Commit();
+            await _uow.Commit();
 
             return new CreatedAtRouteResult
                 ("GetCategoryById", new {id = categoryDTO.CategoryId}, categoryDTO);
@@ -74,30 +74,33 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult<Category> Put(int id, CategoryDTO categoryDTO)
+        public async Task<ActionResult<Category>> Put(int id, CategoryDTO categoryDTO)
         {
             if (categoryDTO is null)
+                return BadRequest();
+
+            if (categoryDTO.CategoryId != id)
                 return BadRequest();
 
             var category = _mapper.Map<Category>(categoryDTO);
 
             _uow.CategoryRepository.Update(category);
-            _uow.Commit();
+            await _uow.Commit();
 
             return new CreatedAtRouteResult
                 ("GetCategoryById", new { id = categoryDTO.CategoryId }, categoryDTO);
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult<Category> Delete(int id)
+        public async Task<ActionResult<Category>> Delete(int id)
         {
-            var category = _uow.CategoryRepository.Get(c => c.CategoryId == id);
+            var category = await _uow.CategoryRepository.Get(c => c.CategoryId == id);
 
             if (category is null)
                 return NotFound("Category Not Found");
 
             _uow.CategoryRepository.Delete(category);
-            _uow.Commit();
+            await _uow.Commit();
 
             return Ok();
         }

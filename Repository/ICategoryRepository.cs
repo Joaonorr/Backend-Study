@@ -5,6 +5,6 @@ namespace WebApplication1.Repository;
 
 public interface ICategoryRepository : IRepository<Category>
 {
-    PagedList<Category> GetCategoriesProducts(CategoryParameters categoryParameters);
-    PagedList<Category> GetCategoriesPaged(CategoryParameters categoryParameters);
+    Task<PagedList<Category>> GetCategoriesProducts(CategoryParameters categoryParameters);
+    Task<PagedList<Category>> GetCategoriesPaged(CategoryParameters categoryParameters);
 }

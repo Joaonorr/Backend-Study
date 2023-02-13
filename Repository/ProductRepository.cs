@@ -10,9 +10,9 @@ public class ProductRepository : Repository<Product>, IProductRepository
     {        
     }
 
-    public PagedList<Product> GetProductsPaged(ProductsParameters productsParameters)
+    public async Task<PagedList<Product>> GetProductsPaged(ProductsParameters productsParameters)
     {
-        return PagedList<Product>.ToPagedList(
+        return await PagedList<Product>.ToPagedList(
             GetAll().OrderBy(p => p.Name),
             productsParameters.PageNumer,
             productsParameters.PageSize);

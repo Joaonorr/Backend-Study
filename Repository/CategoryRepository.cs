@@ -11,17 +11,17 @@ public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
     }
 
-    public PagedList<Category> GetCategoriesProducts(CategoryParameters categoryParameters)
+    public async Task<PagedList<Category>> GetCategoriesProducts(CategoryParameters categoryParameters)
     {
-        return PagedList<Category>.ToPagedList(
+        return await PagedList<Category>.ToPagedList(
             GetAll().Include(c => c.products).OrderBy(c => c.Name),
             categoryParameters.PageNumer,
             categoryParameters.PageSize);
     }
 
-    public PagedList<Category> GetCategoriesPaged(CategoryParameters categoryParameters)
+    public async Task<PagedList<Category>> GetCategoriesPaged(CategoryParameters categoryParameters)
     {
-        return PagedList<Category>.ToPagedList(
+        return await PagedList<Category>.ToPagedList(
             GetAll().OrderBy(c => c.Name),
             categoryParameters.PageNumer,
             categoryParameters.PageSize);

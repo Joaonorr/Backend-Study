@@ -24,9 +24,9 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ProductDTO>> Get([FromQuery] ProductsParameters productsParameters)
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> Get([FromQuery] ProductsParameters productsParameters)
         {
-            var products = _uow.ProductRepository.GetProductsPaged(productsParameters);
+            var products = await _uow.ProductRepository.GetProductsPaged(productsParameters);
 
             if (products is null)
                 return NotFound("Empty product list");
@@ -49,9 +49,9 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetProductById")]
-        public ActionResult<ProductDTO> Get(int id)
+        public async Task<ActionResult<ProductDTO>> Get(int id)
         {
-            var product = _uow.ProductRepository.Get(p => p.ProductId == id);
+            var product = await _uow.ProductRepository.Get(p => p.ProductId == id);
 
             if (product is null)
                 return NotFound("Product Not Found");
@@ -63,7 +63,7 @@ namespace WebApplication1.Controllers
 
 
         [HttpPost]
-        public ActionResult Post(ProductDTO productDTO)
+        public async Task<ActionResult> Post(ProductDTO productDTO)
         {
 
             if (productDTO is null)
@@ -72,14 +72,14 @@ namespace WebApplication1.Controllers
             var product = _mapper.Map<Product>(productDTO);
 
             _uow.ProductRepository.Add(product);
-            _uow.Commit();
+            await _uow.Commit();
 
             return new CreatedAtRouteResult("GetProductById",
                 new {id = productDTO.ProductId}, productDTO);
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, ProductDTO productDTO)
+        public async Task<ActionResult> Put(int id, ProductDTO productDTO)
         {
             if (id != productDTO.ProductId)
                 return BadRequest();
@@ -87,21 +87,21 @@ namespace WebApplication1.Controllers
             var product = _mapper.Map<Product>(productDTO);
 
             _uow.ProductRepository.Update(product);
-            _uow.Commit();
+            await _uow.Commit();
 
             return Ok(productDTO);
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var product = _uow.ProductRepository.Get(p => p.ProductId == id);
+            var product = await _uow.ProductRepository.Get(p => p.ProductId == id);
 
             if (product is null)
                 return NotFound("Product Not Found");
 
             _uow.ProductRepository.Delete(product);
-            _uow.Commit();
+            await _uow.Commit();
 
             return Ok();
         }
