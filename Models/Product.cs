@@ -10,7 +10,7 @@ public class Product
     [Key]
     public int ProductId { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Name is required")]
     [MaxLength(150)]
     public string? Name { get; set; }
 
@@ -23,7 +23,9 @@ public class Product
     public string? ImageUrl { get; set; }
 
     [Required]
+    [DataType(DataType.Currency)]
     [Column(TypeName = "decimal(10,2)")]
+    [Range(1, 1000, ErrorMessage = "Price must be between {1} and {2}")]
     public decimal Price { get; set; }
 
     [Required]

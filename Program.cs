@@ -14,6 +14,7 @@ builder.ConfigureServices();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// middlewares
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -21,6 +22,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
