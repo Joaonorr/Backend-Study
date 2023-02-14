@@ -16,6 +16,7 @@ public static class Services
 {
     public static void ConfigureServices(this WebApplicationBuilder builder)
     {
+        builder.Services.AddCors();
         // Add services to the container.
 
         builder.Services.AddControllers().AddJsonOptions(options =>
