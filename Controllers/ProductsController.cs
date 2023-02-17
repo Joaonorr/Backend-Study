@@ -1,109 +1,127 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using WebApplication1.DTOs;
 using WebApplication1.Models;
 using WebApplication1.Pagination;
 using WebApplication1.Repository.UnitWork;
+using Microsoft.AspNetCore.Http;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace WebApplication1.Controllers
+namespace WebApplication1.Controllers;
+
+[Produces("application/json")]
+[Authorize(AuthenticationSchemes = "Bearer")]
+[Route("api/[controller]")]
+[ApiController]
+public class ProductsController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class ProductsController : ControllerBase
+    private readonly IUnitOfWork _uow;
+    private readonly IMapper _mapper;
+
+    public ProductsController(IUnitOfWork uow, IMapper mapper)
     {
-        private readonly IUnitOfWork _uow;
-        private readonly IMapper _mapper;
+        _uow = uow;
+        _mapper = mapper;
+    }
 
-        public ProductsController(IUnitOfWork uow, IMapper mapper)
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult<IEnumerable<ProductDTO>>> Get([FromQuery] ProductsParameters productsParameters)
+    {
+        var products = await _uow.ProductRepository.GetProductsPaged(productsParameters);
+
+        if (products is null)
+            return NotFound("Empty product list");
+
+        var metadata = new
         {
-            _uow = uow;
-            _mapper = mapper;
-        }
+            products.TotalCount,
+            products.PageSize,
+            products.CurrentPage,
+            products.TotalPages,
+            products.HasNext,
+            products.HasPrevious
+        };
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> Get([FromQuery] ProductsParameters productsParameters)
-        {
-            var products = await _uow.ProductRepository.GetProductsPaged(productsParameters);
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
-            if (products is null)
-                return NotFound("Empty product list");
+        var productsDTO = _mapper.Map<List<ProductDTO>>(products);
 
-            var metadata = new
-            {
-                products.TotalCount,
-                products.PageSize,
-                products.CurrentPage,
-                products.TotalPages,
-                products.HasNext,
-                products.HasPrevious
-            };
+        return productsDTO;
+    }
 
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+    [HttpGet("{id:int}", Name = "GetProductById")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult<ProductDTO>> Get(int id)
+    {
+        var product = await _uow.ProductRepository.Get(p => p.ProductId == id);
 
-            var productsDTO = _mapper.Map<List<ProductDTO>>(products);
+        if (product is null)
+            return NotFound("Product Not Found");
 
-            return productsDTO;
-        }
+        var productDTO = _mapper.Map<ProductDTO>(product);
 
-        [HttpGet("{id:int}", Name = "GetProductById")]
-        public async Task<ActionResult<ProductDTO>> Get(int id)
-        {
-            var product = await _uow.ProductRepository.Get(p => p.ProductId == id);
-
-            if (product is null)
-                return NotFound("Product Not Found");
-
-            var productDTO = _mapper.Map<ProductDTO>(product);
-
-            return productDTO;
-        }
+        return productDTO;
+    }
 
 
-        [HttpPost]
-        public async Task<ActionResult> Post(ProductDTO productDTO)
-        {
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult> Post(ProductDTO productDTO)
+    {
 
-            if (productDTO is null)
-                return BadRequest();
+        if (productDTO is null)
+            return BadRequest();
 
-            var product = _mapper.Map<Product>(productDTO);
+        var product = _mapper.Map<Product>(productDTO);
 
-            _uow.ProductRepository.Add(product);
-            await _uow.Commit();
+        _uow.ProductRepository.Add(product);
+        await _uow.Commit();
 
-            return new CreatedAtRouteResult("GetProductById",
-                new {id = productDTO.ProductId}, productDTO);
-        }
+        return new CreatedAtRouteResult("GetProductById",
+            new {id = productDTO.ProductId}, productDTO);
+    }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult> Put(int id, ProductDTO productDTO)
-        {
-            if (id != productDTO.ProductId)
-                return BadRequest();
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult> Put(int id, ProductDTO productDTO)
+    {
+        if (id != productDTO.ProductId)
+            return BadRequest();
 
-            var product = _mapper.Map<Product>(productDTO);
+        var product = _mapper.Map<Product>(productDTO);
 
-            _uow.ProductRepository.Update(product);
-            await _uow.Commit();
+        _uow.ProductRepository.Update(product);
+        await _uow.Commit();
 
-            return Ok(productDTO);
-        }
+        return Ok(productDTO);
+    }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var product = await _uow.ProductRepository.Get(p => p.ProductId == id);
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult> Delete(int id)
+    {
+        var product = await _uow.ProductRepository.Get(p => p.ProductId == id);
 
-            if (product is null)
-                return NotFound("Product Not Found");
+        if (product is null)
+            return NotFound("Product Not Found");
 
-            _uow.ProductRepository.Delete(product);
-            await _uow.Commit();
+        _uow.ProductRepository.Delete(product);
+        await _uow.Commit();
 
-            return Ok();
-        }
+        return Ok();
     }
 }

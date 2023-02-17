@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using WebApplication1.Context;
@@ -23,11 +26,24 @@ public static class Services
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(c =>
+        builder.Services.AddSwaggerGen(swagger =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApplicationAPI", Version = "v1" });
+            swagger.SwaggerDoc("v1", new OpenApiInfo 
+            { 
+                Title = "WebApplicationAPI",
+                Version = "v1" ,
+                Contact = new OpenApiContact
+                {
+                    Name = "João Norões",
+                    Email = "joaonoroes.jn@gmail.com",
+                }
+            });
 
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            swagger.IncludeXmlComments(xmlPath);
+
+            swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
             {
                 Name = "Authorization",
                 Type = SecuritySchemeType.ApiKey,
@@ -37,7 +53,7 @@ public static class Services
                 Description = "JWT authorization header using the Bearer scheme.\r\n\r\nProvide 'Bearer' followed by a space and your token.\r\n\r\nExample: 'Bearer 12345abcdef",
             });
 
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
                     new OpenApiSecurityScheme
@@ -85,5 +101,16 @@ public static class Services
                  });
 
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        builder.Services.AddApiVersioning(options =>
+        {
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.ReportApiVersions = true;
+            options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader(),
+                                                 new HeaderApiVersionReader("x-api-version"),
+                                                 new MediaTypeApiVersionReader("x-api-version"));
+        });
+
     }
 }

@@ -5,9 +5,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WebApplication1.DTOs.Auth;
+using Microsoft.AspNetCore.Http;
 
 namespace WebApplication1.Controllers;
 
+[Produces("application/json")]
+[ApiVersion("1.0")]
 [Route("api/[controller]")]
 [ApiController]
 public class AuthorizeController : ControllerBase
@@ -33,6 +36,9 @@ public class AuthorizeController : ControllerBase
     }
 
     [HttpPost("register")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<IdentityError>), StatusCodes.Status400BadRequest)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult> ResisterUser([FromBody] UserDTO userDTO)
     {
         var user = new IdentityUser
@@ -53,6 +59,9 @@ public class AuthorizeController : ControllerBase
     }
 
     [HttpPost("login")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary), StatusCodes.Status400BadRequest)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult> Login([FromBody] UserDTO userDTO)
     {
         var result = await _signInManager.PasswordSignInAsync(userDTO.Email, userDTO.Password, false, false);
